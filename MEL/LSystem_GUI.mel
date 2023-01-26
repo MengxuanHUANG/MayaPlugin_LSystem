@@ -1,0 +1,62 @@
+global proc CallLSystemProc (string $grammar, 
+                            string $iterationFiled, 
+                            string $stepField, 
+                            string $angleField)
+{
+	 /*print ("LSystemCmd  -grammar " + $grammar + 
+				" -iteration " + `intSliderGrp -q -value $iterationFiled` + 
+				" -stepSize " + `floatSliderGrp -q -value $stepField` +
+				" -angle " + `floatSliderGrp -q -value $angleField`);*/
+				
+    LSystemCmd  -g $grammar 
+                -it `intSliderGrp -q -value $iterationFiled`
+                -s `floatSliderGrp -q -value $stepField`
+                -a `floatSliderGrp -q -value $angleField`;
+}
+
+global proc string browseGrammar()
+{
+	string $result[] = `fileDialog2 -startingDirectory "E:\\Study\\Upenn\\CIS6600_Advanced_Topics_in_CG\\HW2\\HW2_MayaPlugin_VS2019\\plants" -fileFilter "*.txt" -fm 1`;
+	$fileId = `fopen $result[0] "r"`;
+	string $grammar = `fread $fileId $grammar`;
+	return $grammar; 
+}
+
+global proc showMyWindow()
+{
+// Set $developing to false when you are ready to release
+string $grammar;
+int $developing = true;
+if( $developing && `window -exists LSystemWindow` )
+	deleteUI LSystemWindow;
+if( !`window -exists LSystemWindow` ) {
+	
+	window -title "Call LSystem Command" -w 450 LSystemWindow;
+	columnLayout;
+		text -l "" -h 10;
+		rowLayout -numberOfColumns 2 -columnAlign2 "right" "left" -columnWidth2 138 250;
+			text -label "Browse for grammar files" -align "left" -w 130;
+			button -label "Browse" -command ("$grammar = browseGrammar()") -align "right";
+			setParent ..;
+		rowLayout -numberOfColumns 2 -columnAlign2 "right" "left" -columnWidth2 138 250;
+		   scrollField -width 500 -wordWrap true;
+			setParent ..;
+		string $iterationField = `intSliderGrp -label "Iterations" -field true -value 5 -min 1 -max 10`;
+		string $stepField = `floatSliderGrp -label "Default step size" -field true -value 1.0 -min 0.1 -max 100.0`;
+		string $angleField = `floatSliderGrp -label "Default angle" -field true -value 90.0 -min 0.0 -max 360.0`;
+		
+		rowLayout -numberOfColumns 2 -columnWidth2 150 150 -columnAlign2 "left" "right";
+			button -label "Create" -command (   "CallLSystemProc $grammar" +
+													" " + $iterationField +
+													" " + $stepField +
+													" " + $angleField +
+													"; deleteUI LSystemWindow") 
+			-align "center";
+			button -label "Cancel" -command "deleteUI LSystemWindow" -align "center";
+			setParent ..;
+		text -label "" -h 10;
+}
+showWindow LSystemWindow;
+}
+
+showMyWindow();

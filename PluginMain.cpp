@@ -29,8 +29,15 @@ MStatus initializePlugin( MObject obj )
         status.perror("registerCommand");
         return status;
     }
-
-    return status;
+    else
+    {
+        // open Window
+        MString command = "source \"" + plugin.loadPath() + "/MEL/LSystem_GUI.mel\"";
+        
+        MGlobal::displayInfo(command);
+        MGlobal::executeCommand(command);
+        return status;
+    }
 }
 
 MStatus uninitializePlugin( MObject obj)
@@ -46,5 +53,3 @@ MStatus uninitializePlugin( MObject obj)
 
     return status;
 }
-
-

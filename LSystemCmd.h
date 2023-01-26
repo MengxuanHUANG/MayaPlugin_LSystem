@@ -2,7 +2,8 @@
 #define CreateLSystemCmd_H_
 
 #include <maya/MPxCommand.h>
-#include <string>
+#include <maya/MArgList.h>
+#include <maya/MSyntax.h>
 
 class LSystemCmd : public MPxCommand
 {
@@ -11,6 +12,8 @@ public:
     virtual ~LSystemCmd();
     static void* creator() { return new LSystemCmd(); }
     MStatus doIt( const MArgList& args );
+
+    static MSyntax newSyntax();
 };
 
 #endif
