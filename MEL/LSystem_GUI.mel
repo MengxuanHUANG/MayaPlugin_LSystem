@@ -41,7 +41,7 @@ if( !`window -exists LSystemWindow` ) {
 		rowLayout -numberOfColumns 2 -columnAlign2 "right" "left" -columnWidth2 138 250;
 		   scrollField -width 500 -wordWrap true;
 			setParent ..;
-		string $iterationField = `intSliderGrp -label "Iterations" -field true -value 5 -min 1 -max 10`;
+		string $iterationField = `intSliderGrp -label "Iterations" -field true -value 5 -min 0 -max 10`;
 		string $stepField = `floatSliderGrp -label "Default step size" -field true -value 1.0 -min 0.1 -max 100.0`;
 		string $angleField = `floatSliderGrp -label "Default angle" -field true -value 90.0 -min 0.0 -max 360.0`;
 		

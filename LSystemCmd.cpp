@@ -4,11 +4,21 @@
 #include <maya/MGlobal.h>
 #include <maya/MArgDatabase.h>
 #include <list>
+#include "LSystem.h"
 
 const char* stepFlag = "-s", * stepLongFlag = "-stepSize";
 const char* angleFlag = "-a", * angleLongFlag = "-angle";
 const char* grammarFlag = "-g", * grammarLongFlag = "-grammar";
 const char* iterationFlag = "-it", * iterationLongFlag = "-iteration";
+
+MString Vec3toStr(const vec3& p)
+{
+	for (int i = 0; i < 3; ++i)
+	{
+
+	}
+	return MString();
+}
 
 MSyntax LSystemCmd::newSyntax()
 {
@@ -70,12 +80,45 @@ MStatus LSystemCmd::doIt( const MArgList& args )
 		MGlobal::displayInfo(str);
 	}
 
+	LSystem lsystem;
+	lsystem.setDefaultAngle(angle);
+
+	lsystem.setDefaultStep(step);
+
+	lsystem.loadProgramFromString(grammar.asChar());
+
+	std::vector<LSystem::Branch> branches;
+	std::vector<LSystem::Geometry> geometry;
+	lsystem.process(iteration, branches, geometry);
+
+	MString curveTemplate = "curve -d 1 -p ^1s -p ^2s -k 0 - k 1;";
+	MStatus status;
+	for (LSystem::Branch& branch : branches)
+	{
+		const vec3& start = branch.first;
+		const vec3& end = branch.second;
+
+		MString startStr = " ", endStr = " ";
+		for (int i = 0; i < 3; ++i)
+		{
+			startStr += start[i];
+			startStr += " ";
+
+			endStr += end[i];
+			endStr += " ";
+		}
+
+		MString command;
+		command.format(curveTemplate, startStr, endStr);
+		status = MGlobal::executeCommand(command);
+	}
+
 	// message in scriptor editor
 	MString extrude = R"(curve -d 1 -p 0 0 0 - p 1 1 1 -k 0 - k 1 - name curve1;
 						 select - r ^1s curve1;
 						 extrude - ch true - rn false - po 1 - et 2 - ucp 1 - fpt 1 - upn 1 - rotation 0 - scale 1 - rsp 1 "nurbsCircle1" "curve1"; )";
 	//MString command;
 	//command.format(extrude, "nurbsCircle1");
-	MStatus status;// = MGlobal::executeCommand(command);
+	//MStatus status;// = MGlobal::executeCommand(command);
 	return MStatus::kSuccess;
 }

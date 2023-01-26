@@ -17,6 +17,7 @@
 #include <list>
 
 #include "LSystemCmd.h"
+#include "LSystemNode.h"
 
 MStatus initializePlugin( MObject obj )
 {
@@ -36,6 +37,9 @@ MStatus initializePlugin( MObject obj )
         
         MGlobal::displayInfo(command);
         MGlobal::executeCommand(command);
+
+        status = plugin.registerNode("LSystemNode", LSystemNode::id, LSystemNode::creator, LSystemNode::initialize);
+
         return status;
     }
 }
@@ -51,5 +55,10 @@ MStatus uninitializePlugin( MObject obj)
 	    return status;
     }
 
+    status = plugin.deregisterNode(LSystemNode::id);
+    if (!status) {
+        status.perror("deregisterNode");
+        return status;
+    }
     return status;
 }
