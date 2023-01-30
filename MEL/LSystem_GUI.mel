@@ -1,3 +1,5 @@
+global string $grammar;
+
 global proc CallLSystemProc (string $grammar, 
                             string $iterationFiled, 
                             string $stepField, 
@@ -16,16 +18,20 @@ global proc CallLSystemProc (string $grammar,
 
 global proc string browseGrammar()
 {
-	string $result[] = `fileDialog2 -startingDirectory "E:\\Study\\Upenn\\CIS6600_Advanced_Topics_in_CG\\HW2\\HW2_MayaPlugin_VS2019\\plants" -fileFilter "*.txt" -fm 1`;
+	string $result[] = `fileDialog2 -fileFilter "*.txt" -fm 1`;
 	$fileId = `fopen $result[0] "r"`;
-	string $grammar = `fread $fileId $grammar`;
+	string $content = `fread $fileId $content`;
+	if(`scrollField -exists myfield`)
+	{
+	    scrollField -e -text $content myfield;
+	}
 	return $result[0]; 
 }
 
 global proc showMyWindow()
 {
 // Set $developing to false when you are ready to release
-string $grammar;
+
 int $developing = true;
 if( $developing && `window -exists LSystemWindow` )
 	deleteUI LSystemWindow;
@@ -39,7 +45,7 @@ if( !`window -exists LSystemWindow` ) {
 			button -label "Browse" -command ("$grammar = browseGrammar()") -align "right";
 			setParent ..;
 		rowLayout -numberOfColumns 2 -columnAlign2 "right" "left" -columnWidth2 138 250;
-		   scrollField -width 500 -wordWrap true;
+		    scrollField -width 500 -wordWrap true -ed false myfield;
 			setParent ..;
 		string $iterationField = `intSliderGrp -label "Iterations" -field true -value 5 -min 0 -max 10`;
 		string $stepField = `floatSliderGrp -label "Default step size" -field true -value 1.0 -min 0.1 -max 100.0`;
@@ -67,4 +73,4 @@ global string $gMainWindow;
 setParent $gMainWindow;
 menu -label "LSystemMenu" -tearOff true -aob true LSystemMenu;
 menuItem -label "Create" -command "showMyWindow();";
-menuItem -label "Create Default LSystem" -command "LSystemCmd -s 5 -a 20 -it 3 -g \"E:/Study/Upenn/CIS6600_Advanced_Topics_in_CG/HW2/MayaPlugin_LSystem/plants/simple1.txt\"";
+menuItem -label "Create Default LSystem" -command "LSystemCmd -s 5 -a 20 -it 3 -g \"\"";
