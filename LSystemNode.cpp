@@ -26,6 +26,7 @@ MObject LSystemNode::iAngleAttr;
 MObject LSystemNode::iStepAttr;
 MObject LSystemNode::iGrammarAttr;
 MObject LSystemNode::iTimeAttr;
+MObject LSystemNode::iIterationAttr;
 MObject LSystemNode::oGeometryAttr;
 
 void* LSystemNode::creator()
@@ -47,13 +48,23 @@ MStatus LSystemNode::initialize()
     addAttribute(LSystemNode::oGeometryAttr);
 
     // input attributes
+    LSystemNode::iIterationAttr = nAttr.create("iIteration", "it", MFnNumericData::kInt, 2.0);
+    returnStatus = nAttr.setStorable(false);
+    returnStatus = nAttr.setMin(1.0);
+    returnStatus = nAttr.setMax(5.0);
+    addAttribute(LSystemNode::iIterationAttr);
+
     // input angle
     LSystemNode::iAngleAttr = nAttr.create("iAngle", "ia", MFnNumericData::kFloat, 90.0);
     returnStatus = nAttr.setStorable(false);
+    returnStatus = nAttr.setMin(0.0);
+    returnStatus = nAttr.setMax(360.0);
     addAttribute(LSystemNode::iAngleAttr);
 
     // input step
     LSystemNode::iStepAttr = nAttr.create("iStep", "is", MFnNumericData::kFloat, 5.0);
+    returnStatus = nAttr.setMin(0.1);
+    returnStatus = nAttr.setMax(100.0);
     returnStatus = nAttr.setStorable(false);
     addAttribute(LSystemNode::iStepAttr);
 
@@ -64,16 +75,19 @@ MStatus LSystemNode::initialize()
     returnStatus = tAttr.setStorable(false);
     returnStatus = tAttr.setUsedAsFilename(true);
     addAttribute(LSystemNode::iGrammarAttr);
-
+    
+    /*
     // input time
     LSystemNode::iTimeAttr = uAttr.create("iTime", "it", MFnUnitAttribute::kTime, 0.0);
     returnStatus = nAttr.setStorable(false);
     addAttribute(LSystemNode::iTimeAttr);
+    */
 
     returnStatus = attributeAffects(LSystemNode::iAngleAttr, LSystemNode::oGeometryAttr);
     returnStatus = attributeAffects(LSystemNode::iStepAttr, LSystemNode::oGeometryAttr);
     returnStatus = attributeAffects(LSystemNode::iGrammarAttr, LSystemNode::oGeometryAttr);
-    returnStatus = attributeAffects(LSystemNode::iTimeAttr, LSystemNode::oGeometryAttr);
+    returnStatus = attributeAffects(LSystemNode::iIterationAttr, LSystemNode::oGeometryAttr);
+    //returnStatus = attributeAffects(LSystemNode::iTimeAttr, LSystemNode::oGeometryAttr);
 
 	return MS::kSuccess;
 }
@@ -83,27 +97,31 @@ MStatus LSystemNode::compute(const MPlug& plug, MDataBlock& data)
     MStatus returnStatus;
     if (plug == LSystemNode::oGeometryAttr) {
         /* Get time */
-        MDataHandle timeData = data.inputValue(iTimeAttr, &returnStatus);
-        MTime time = timeData.asTime();
+        //MDataHandle timeData = data.inputValue(iTimeAttr, &returnStatus);
+        //MTime time = timeData.asTime();
+
+        /* Get iteration */
+        MDataHandle itData = data.inputValue(iIterationAttr, &returnStatus);
+        int iteration = itData.asInt();
 
         /* Get angle */
         MDataHandle angleData = data.inputValue(iAngleAttr, &returnStatus);
-        double angle = angleData.asDouble();
+        float angle = angleData.asFloat();
 
         /* Get step */
         MDataHandle stepData = data.inputValue(iStepAttr, &returnStatus);
-        double step = stepData.asDouble();
+        float step = stepData.asFloat();
 
         /* Get grammar */
-        //MDataHandle grammarData = data.inputValue(iGrammarAttr, &returnStatus);
-        MString grammarFile = "";
+        MDataHandle grammarData = data.inputValue(iGrammarAttr, &returnStatus);
+        MString grammarFile = grammarData.asString();
 
         /* Get output object */
         MDataHandle outputHandle = data.outputValue(oGeometryAttr, &returnStatus);
         MFnMeshData dataCreator;
         MObject newOutputData = dataCreator.create(&returnStatus);
 
-        ComputeLSystem(angle, step, grammarFile, time, newOutputData, returnStatus);
+        ComputeLSystem(angle, step, grammarFile, iteration, newOutputData, returnStatus);
 
         outputHandle.set(newOutputData);
         data.setClean(plug);
@@ -113,20 +131,20 @@ MStatus LSystemNode::compute(const MPlug& plug, MDataBlock& data)
     return MS::kSuccess;
 }
 
-MObject LSystemNode::ComputeLSystem(const double& angle,
-                                    const double& step,
+MObject LSystemNode::ComputeLSystem(const float& angle,
+                                    const float& step,
                                     const MString& grammarFile,
-                                    const MTime& time,
+                                    const int& iteration,
                                     MObject& outData,
                                     MStatus& stat)
 {
     LSystem lsystem;
-    lsystem.setDefaultAngle(20);
-    lsystem.setDefaultStep(1);
-    lsystem.loadProgram("E:/Study/Upenn/CIS6600_Advanced_Topics_in_CG/HW2/MayaPlugin_LSystem/plants/simple1.txt");
+    lsystem.setDefaultAngle(angle);
+    lsystem.setDefaultStep(step);
+    lsystem.loadProgram(grammarFile.asChar());
 
     std::vector<LSystem::Branch> branches;
-    lsystem.process(3, branches);
+    lsystem.process(iteration, branches);
 
     MPointArray points;
     MIntArray faceCounts;
@@ -137,8 +155,8 @@ MObject LSystemNode::ComputeLSystem(const double& angle,
         const vec3& start = branch.first;
         const vec3& end = branch.second;
 
-        CylinderMesh cylinder(MPoint(start[0], start[1], start[2], 1.f),
-                              MPoint(end[0], end[1], end[2], 1.f));
+        CylinderMesh cylinder(MPoint(start[0], start[2], start[1]),
+                              MPoint(end[0], end[2], end[1]));
 
         cylinder.appendToMesh(points, faceCounts, faceConnects);
     }

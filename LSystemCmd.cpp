@@ -53,7 +53,6 @@ MStatus LSystemCmd::doIt( const MArgList& args )
 	if (argData.isFlagSet(grammarFlag))
 	{
 		argData.getFlagArgument(grammarFlag, 0, grammar);
-		MGlobal::displayInfo(grammar);
 	}
 	unsigned int iteration;
 	if (argData.isFlagSet(iterationFlag))
@@ -61,7 +60,6 @@ MStatus LSystemCmd::doIt( const MArgList& args )
 		argData.getFlagArgument(iterationFlag, 0, iteration);
 		MString str;
 		str += iteration;
-		MGlobal::displayInfo(str);
 	}
 	double step;
 	if (argData.isFlagSet(stepFlag))
@@ -69,7 +67,6 @@ MStatus LSystemCmd::doIt( const MArgList& args )
 		argData.getFlagArgument(stepFlag, 0, step);
 		MString str;
 		str += step;
-		MGlobal::displayInfo(str);
 	}
 	double angle;
 	if (argData.isFlagSet(angleFlag))
@@ -77,48 +74,29 @@ MStatus LSystemCmd::doIt( const MArgList& args )
 		argData.getFlagArgument(angleFlag, 0, angle);
 		MString str;
 		str += angle;
-		MGlobal::displayInfo(str);
-	}
-
-	LSystem lsystem;
-	lsystem.setDefaultAngle(angle);
-
-	lsystem.setDefaultStep(step);
-
-	lsystem.loadProgramFromString(grammar.asChar());
-
-	std::vector<LSystem::Branch> branches;
-	std::vector<LSystem::Geometry> geometry;
-	lsystem.process(iteration, branches, geometry);
-
-	MString curveTemplate = "curve -d 1 -p ^1s -p ^2s -k 0 - k 1;";
-	MStatus status;
-	for (LSystem::Branch& branch : branches)
-	{
-		const vec3& start = branch.first;
-		const vec3& end = branch.second;
-
-		MString startStr = " ", endStr = " ";
-		for (int i = 0; i < 3; ++i)
-		{
-			startStr += start[i];
-			startStr += " ";
-
-			endStr += end[i];
-			endStr += " ";
-		}
-
-		MString command;
-		command.format(curveTemplate, startStr, endStr);
-		status = MGlobal::executeCommand(command);
 	}
 
 	// message in scriptor editor
-	MString extrude = R"(curve -d 1 -p 0 0 0 - p 1 1 1 -k 0 - k 1 - name curve1;
-						 select - r ^1s curve1;
-						 extrude - ch true - rn false - po 1 - et 2 - ucp 1 - fpt 1 - upn 1 - rotation 0 - scale 1 - rsp 1 "nurbsCircle1" "curve1"; )";
-	//MString command;
-	//command.format(extrude, "nurbsCircle1");
-	//MStatus status;// = MGlobal::executeCommand(command);
+	MString extrude = R"(createNode transform -n LSystem1;
+						 createNode mesh -n LSystemShape1 -p LSystem1;
+						 sets -add initialShadingGroup LSystemShape1;
+						 createNode LSystemNode -n LSystemNode1;
+						 setAttr LSystemNode1.iIteration ^1s;
+						 setAttr LSystemNode1.iAngle ^2s;
+						 setAttr LSystemNode1.iStep ^3s;
+						 setAttr LSystemNode1.iGrammar -type "string" "^4s";
+					     connectAttr LSystemNode1.OutGeometry LSystemShape1.inMesh; )";
+	MString angleStr;
+	angleStr += angle;
+
+	MString stepStr;
+	stepStr += step;
+
+	MString itStr;
+	itStr += iteration;
+
+	MString command;
+	command.format(extrude, itStr, angleStr, stepStr, grammar);
+	MStatus status = MGlobal::executeCommand(command);
 	return MStatus::kSuccess;
 }

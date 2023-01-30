@@ -19,7 +19,7 @@ global proc string browseGrammar()
 	string $result[] = `fileDialog2 -startingDirectory "E:\\Study\\Upenn\\CIS6600_Advanced_Topics_in_CG\\HW2\\HW2_MayaPlugin_VS2019\\plants" -fileFilter "*.txt" -fm 1`;
 	$fileId = `fopen $result[0] "r"`;
 	string $grammar = `fread $fileId $grammar`;
-	return $grammar; 
+	return $result[0]; 
 }
 
 global proc showMyWindow()
@@ -59,4 +59,12 @@ if( !`window -exists LSystemWindow` ) {
 showWindow LSystemWindow;
 }
 
-showMyWindow();
+if(`menu -exists LSystemMenu`)
+{
+    deleteUI LSystemMenu;   
+}
+global string $gMainWindow;
+setParent $gMainWindow;
+menu -label "LSystemMenu" -tearOff true -aob true LSystemMenu;
+menuItem -label "Create" -command "showMyWindow();";
+menuItem -label "Create Default LSystem" -command "LSystemCmd -s 5 -a 20 -it 3 -g \"E:/Study/Upenn/CIS6600_Advanced_Topics_in_CG/HW2/MayaPlugin_LSystem/plants/simple1.txt\"";

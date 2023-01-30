@@ -18,6 +18,7 @@ public:
 	static MObject iAngleAttr;
 	static MObject iStepAttr;
 	static MObject iGrammarAttr;
+	static MObject iIterationAttr;
 	static MObject iTimeAttr;
 
 	// out attributes
@@ -28,10 +29,10 @@ public:
 	static  MStatus initialize();
 
 protected:
-	MObject ComputeLSystem(const double& angle,
-						   const double& step,
+	MObject ComputeLSystem(const float& angle,
+						   const float& step,
 						   const MString& grammarFile,
-						   const MTime& time, 
+						   const int& iteration, 
 						   MObject& outData, 
 						   MStatus& stat);
 };
