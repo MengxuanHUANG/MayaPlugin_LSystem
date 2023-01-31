@@ -30,8 +30,6 @@ global proc string browseGrammar()
 
 global proc showMyWindow()
 {
-// Set $developing to false when you are ready to release
-
 int $developing = true;
 if( $developing && `window -exists LSystemWindow` )
 	deleteUI LSystemWindow;

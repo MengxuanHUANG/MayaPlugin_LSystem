@@ -85,7 +85,7 @@ MStatus LSystemCmd::doIt( const MArgList& args )
 						 setAttr LSystemNode1.iAngle ^2s;
 						 setAttr LSystemNode1.iStep ^3s;
 						 setAttr LSystemNode1.iGrammar -type "string" "^4s";
-					     connectAttr LSystemNode1.OutGeometry LSystemShape1.inMesh; )";
+					     connectAttr LSystemNode1.OutGeometry LSystemShape1.inMesh;)";
 	MString angleStr;
 	angleStr += angle;
 

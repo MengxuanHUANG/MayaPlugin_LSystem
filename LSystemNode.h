@@ -19,7 +19,6 @@ public:
 	static MObject iStepAttr;
 	static MObject iGrammarAttr;
 	static MObject iIterationAttr;
-	static MObject iTimeAttr;
 
 	// out attributes
 	static MObject oGeometryAttr;
